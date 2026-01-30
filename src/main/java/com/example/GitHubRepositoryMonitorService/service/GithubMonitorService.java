@@ -10,10 +10,8 @@ import com.example.GitHubRepositoryMonitorService.exceptions.IdNotFoundException
 import com.example.GitHubRepositoryMonitorService.exceptions.LanguageAndStatusNotFoundException;
 import com.example.GitHubRepositoryMonitorService.mapper.GithubMonitorMapper;
 import com.example.GitHubRepositoryMonitorService.repository.GithubMonitorRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
@@ -21,16 +19,13 @@ import java.util.UUID;
 
 @Service
 public class GithubMonitorService {
-    @Autowired
-    private final GithubMonitorRepository repositoryMonitorRepository;
-    @Autowired
+    private final GithubMonitorRepository repository;
     private final GithubMonitorMapper mapper;
-    @Autowired
     private final GithubClient githubClient;
 
 
     public GithubMonitorService(GithubMonitorRepository repositoryMonitorRepository, GithubMonitorMapper mapper, GithubClient githubClient) {
-        this.repositoryMonitorRepository = repositoryMonitorRepository;
+        this.repository = repositoryMonitorRepository;
         this.mapper = mapper;
         this.githubClient = githubClient;
     }
@@ -44,7 +39,7 @@ public class GithubMonitorService {
             }
 
         } catch (Exception e) {
-            throw new RuntimeException("Bulunamadı : " + e.getMessage() + HttpStatus.NOT_FOUND);
+            throw new GithubAccountFoundException("Bulunamadı : " + e.getMessage() + HttpStatus.NOT_FOUND);
         }
         GithubMonitor entity = GithubMonitor.builder()
                 .owner(request.getOwner())
@@ -57,34 +52,28 @@ public class GithubMonitorService {
                 .createdAt(LocalDateTime.now())
                 .lastSyncedAt(LocalDateTime.now())
                 .build();
-        GithubMonitor saved = repositoryMonitorRepository.save(entity);
+        GithubMonitor saved = repository.save(entity);
         return mapper.toDto(saved);
-
-
-
-
     }
 
   public Page<ResponseDto> getAllRepositories(Pageable pageable){
 
-        Page<GithubMonitor> repositoryMonitorPage = repositoryMonitorRepository.findAll(pageable);
+        Page<GithubMonitor> repositoryMonitorPage = repository.findAll(pageable);
 
       return repositoryMonitorPage.map(mapper::toDto);  }
     public void deleteRepository(UUID id){
-        if (id == null || !repositoryMonitorRepository.existsById(id)) {
+        if (id == null || !repository.existsById(id)) {
             throw new IdNotFoundException("Silinecek id yok");
         }
-          repositoryMonitorRepository.deleteById(id);
+        repository.deleteById(id);
     }
 
     public ResponseDto  getOneRepository(UUID id) {
-        GithubMonitor repositoryMonitor = repositoryMonitorRepository.findById(id).orElseThrow(() -> new IdNotFoundException("Id bulunamadı: " + id));
+        GithubMonitor repositoryMonitor = repository.findById(id).orElseThrow(() -> new IdNotFoundException("Id bulunamadı: " + id));
             return mapper.toDto(repositoryMonitor);
-
     }
-
         public ResponseDto updateRepository(UUID id ,RequestDto request){
-            GithubMonitor repositoryMonitor = repositoryMonitorRepository.findById(id)
+            GithubMonitor repositoryMonitor = repository.findById(id)
                     .orElseThrow(() -> new IdNotFoundException("Id bulunamadı: " + id));
             repositoryMonitor.setOwner(request.getOwner());
             repositoryMonitor.setRepoName(request.getRepoName());
@@ -108,17 +97,23 @@ public class GithubMonitorService {
 
             } catch (Exception e) {
                 repositoryMonitor.setStatus(status.FAILED);
-                repositoryMonitorRepository.save(repositoryMonitor);
+                repository.save(repositoryMonitor);
                 throw new RuntimeException("Güncellemede hata oluştu: " + e.getMessage());
             }
-            GithubMonitor updatedEntity = repositoryMonitorRepository.save(repositoryMonitor);
+            GithubMonitor updatedEntity = repository.save(repositoryMonitor);
             return mapper.toDto(updatedEntity);
         }
         public Page<ResponseDto> findByLanguageAndStatus(String language, status status, Pageable pageable) {
             Page<GithubMonitor> githubMonitors= null ;
             if (language != null && status != null) {
-                githubMonitors = repositoryMonitorRepository.findByLanguageAndStatus(language, status, pageable);
+                githubMonitors = repository.findByLanguageAndStatus(language, status, pageable);
             }
+            if(language !=null) {
+                githubMonitors = repository.findByLanguage(language,pageable);
+            }
+            if(status != null ){
+                githubMonitors = repository.findByStatus(status,pageable);
+                        }
             else{
                 throw new LanguageAndStatusNotFoundException("Language ve Status Boş");
             }

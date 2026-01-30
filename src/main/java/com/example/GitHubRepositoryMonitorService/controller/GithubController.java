@@ -7,18 +7,13 @@ import com.example.GitHubRepositoryMonitorService.dtos.RequestDto;
 import com.example.GitHubRepositoryMonitorService.dtos.ResponseDto;
 import com.example.GitHubRepositoryMonitorService.service.GithubMonitorService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.UUID;
-
 @RestController
 @RequestMapping("/api/v1/repositories")
 public class GithubController {
-
-    @Autowired
     private final GithubMonitorService repositoryMonitorService;
 
     public GithubController(GithubMonitorService repositoryMonitorService) {
@@ -60,7 +55,7 @@ public class GithubController {
             @RequestParam(required = false) status status,
             @PageableDefault(size = 10) Pageable pageable)
     {
-        if (language != null && status != null) {
+        if (language != null || status != null) {
             return ResponseEntity.ok(repositoryMonitorService.findByLanguageAndStatus(language, status, pageable));
         }
         return ResponseEntity.ok(repositoryMonitorService.getAllRepositories(pageable));

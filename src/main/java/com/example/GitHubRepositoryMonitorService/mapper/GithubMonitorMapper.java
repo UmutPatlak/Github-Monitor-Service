@@ -6,10 +6,7 @@
 
     @Mapper(componentModel = "spring")
     public interface    GithubMonitorMapper {
-
                ResponseDto toDto(GithubMonitor repositoryMonitor) ;
-
-
                     }
 
 

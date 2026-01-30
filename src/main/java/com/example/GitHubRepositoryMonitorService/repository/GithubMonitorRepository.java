@@ -10,5 +10,7 @@ import java.util.UUID;
 public interface GithubMonitorRepository extends JpaRepository<GithubMonitor,UUID> {
     Page<GithubMonitor> findAll(Pageable pageable);
     Page<GithubMonitor> findByLanguageAndStatus(String language, status status, Pageable pageable);
+    Page<GithubMonitor> findByLanguage(String language, Pageable pageable) ;
 
+    Page<GithubMonitor> findByStatus(status status, Pageable pageable);
 }

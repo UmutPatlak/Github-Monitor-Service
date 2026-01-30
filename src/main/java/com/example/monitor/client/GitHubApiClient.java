@@ -18,7 +18,7 @@ public class GitHubApiClient {
                 .get()
                 .uri("/repos/{owner}/{repoName}", owner, repoName)
                 .retrieve()
-                .onStatus(HttpStatusCode::isError, response ->
+                .onStatus(HttpStatusCode::isError,   response ->
                         Mono.error(new RuntimeException("GitHub API error")))
                 .bodyToMono(GitHubResponseDto.class);
     }

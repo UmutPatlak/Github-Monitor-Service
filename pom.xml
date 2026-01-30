@@ -10,7 +10,7 @@
 	</parent>
 
 	<groupId>com.example</groupId>
-	<artifactId>GitHubRepositoryMonitorService</artifactId>
+	<artifactId>MonitorApplication</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>GitHubRepositoryMonitorService</name>
 	<description>GitHub Repository Monitor Service with WebClient</description>

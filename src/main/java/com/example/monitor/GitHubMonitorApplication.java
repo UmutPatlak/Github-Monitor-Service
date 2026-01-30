@@ -1,10 +1,10 @@
-package com.example.GitHubRepositoryMonitorService;
+package com.example.monitor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class GitHubRepositoryMonitorServiceApplication {
+public class GitHubMonitorApplication {
 	public static void main(String[] args) {
-		SpringApplication.run(GitHubRepositoryMonitorServiceApplication.class, args);
+		SpringApplication.run(GitHubMonitorApplication.class, args);
 	}
 }

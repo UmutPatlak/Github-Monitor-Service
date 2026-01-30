@@ -1,4 +1,5 @@
-package com.example.GitHubRepositoryMonitorService.dtos;
+package com.example.monitor.dto;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,17 +12,23 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class GithubResponseDto {
+public class GitHubResponseDto {
+
     @JsonProperty("full_name")
-    private String fullName ;
+    private String fullName;
+
     @JsonProperty("stargazers_count")
-    private Integer stars ;
+    private Integer stars;
+
     @JsonProperty("forks_count")
     private Integer forks;
+
     @JsonProperty("open_issues_count")
-    private  Integer openIssues;
+    private Integer openIssues;
+
     @JsonProperty("language")
-    private  String language;
+    private String language;
+
     @JsonProperty("updated_at")
-    private LocalDateTime updateAt;
+    private LocalDateTime updatedAt;
 }

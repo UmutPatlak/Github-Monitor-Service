@@ -1,4 +1,4 @@
-package com.example.GitHubRepositoryMonitorService.exceptions;
+package com.example.monitor.exceptions;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -13,34 +13,32 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleIdNotFound(IdNotFoundException ex, HttpServletRequest request) {
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.NOT_FOUND.value(),
-                "ID Bulunamadı",
+                "ID Not Found",
                 ex.getMessage(),
                 request.getRequestURI()
         );
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
-    @ExceptionHandler(GithubAccountFoundException.class)
-    public ResponseEntity<ErrorResponse> handleAccountNotFound(GithubAccountFoundException ex , HttpServletRequest request ){
+
+    @ExceptionHandler(GitHubAccountNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleAccountNotFound(GitHubAccountNotFoundException ex, HttpServletRequest request) {
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.NOT_FOUND.value(),
-                "Github Hesabı bulunamadı",
+                "GitHub Account Not Found",
                 ex.getMessage(),
                 request.getRequestURI()
         );
-            return  new ResponseEntity<>(error,HttpStatus.NOT_FOUND) ;
-
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
+
     @ExceptionHandler(LanguageAndStatusNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleLanguageAndStatusNotFound(LanguageAndStatusNotFoundException ex, HttpServletRequest request) {
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.NOT_FOUND.value(),
-                "Language ve Status Alanları Boş",
+                "Language and Status fields are empty",
                 ex.getMessage(),
                 request.getRequestURI()
         );
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
-
-
 }
-

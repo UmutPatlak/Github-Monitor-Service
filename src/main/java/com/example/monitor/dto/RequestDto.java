@@ -1,19 +1,20 @@
-package com.example.GitHubRepositoryMonitorService.dtos;
+package com.example.monitor.dto;
+
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class RequestDto {
-    @NotBlank(message = "owner Boş olamaz")
+
+    @NotBlank(message = "Owner cannot be blank")
     private String owner;
-    @NotBlank(message = "repoName Boş olamaz")
+
+    @NotBlank(message = "Repository name cannot be blank")
     private String repoName;
-
-
-
 }

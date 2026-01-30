@@ -1,6 +1,6 @@
 package com.example.monitor.service;
 
-import com.example.monitor.client.GitHubApiClient;
+import com.example.monitor.client.GitHubClient;
 import com.example.monitor.dto.GitHubResponseDto;
 import com.example.monitor.dto.RequestDto;
 import com.example.monitor.dto.ResponseDto;
@@ -19,15 +19,15 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
-public class GitHubMonitorServiceImpl  implements GitHubMonitorService{
+public class GitHubMonitorServiceImpl implements GitHubMonitorService {
 
     private final GitHubMonitorRepository gitHubMonitorRepository;
     private final GitHubMonitorMapper gitHubMonitorMapper;
-    private final GitHubApiClient gitHubClient;
+    private final GitHubClient gitHubClient;
 
     public GitHubMonitorServiceImpl(GitHubMonitorRepository gitHubMonitorRepository,
                                     GitHubMonitorMapper gitHubMonitorMapper,
-                                    GitHubApiClient gitHubClient) {
+                                    GitHubClient gitHubClient) {
         this.gitHubMonitorRepository = gitHubMonitorRepository;
         this.gitHubMonitorMapper = gitHubMonitorMapper;
         this.gitHubClient = gitHubClient;
@@ -36,12 +36,12 @@ public class GitHubMonitorServiceImpl  implements GitHubMonitorService{
     public ResponseDto addRepository(RequestDto request) {
         GitHubResponseDto gitData;
         try {
-            gitData = gitHubClient.getRepositoryDetails(request.getOwner(), request.getRepoName()).block();
+            gitData = gitHubClient.getRepository(request.getOwner(), request.getRepoName()).block();
             if (gitData == null) {
                 throw new GitHubAccountNotFoundException("GitHub not found");
             }
         } catch (Exception e) {
-            throw new GitHubAccountNotFoundException("Not found" +e.getMessage());
+            throw new GitHubAccountNotFoundException("Not found" + e.getMessage());
         }
 
         GitHubMonitor entity = GitHubMonitor.builder()
@@ -87,7 +87,7 @@ public class GitHubMonitorServiceImpl  implements GitHubMonitorService{
 
         GitHubResponseDto gitData;
         try {
-            gitData = gitHubClient.getRepositoryDetails(
+            gitData = gitHubClient.getRepository(
                     gitHubMonitor.getOwner(),
                     gitHubMonitor.getRepoName()
             ).block();

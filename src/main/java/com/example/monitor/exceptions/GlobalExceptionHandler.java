@@ -1,44 +1,67 @@
 package com.example.monitor.exceptions;
 
-import jakarta.servlet.http.HttpServletRequest;
+import lombok.Builder;
+import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(IdNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleIdNotFound(IdNotFoundException ex, HttpServletRequest request) {
-        ErrorResponse error = new ErrorResponse(
-                HttpStatus.NOT_FOUND.value(),
-                "ID Not Found",
-                ex.getMessage(),
-                request.getRequestURI()
+    @ExceptionHandler(BaseException.class)
+    public ResponseEntity<ErrorDetails> handleBaseException(BaseException ex) {
+        log.error(" hata mesajı: {} | status={}", ex.getMessage(), ex.getHttpStatus());
+
+        return build(
+                ex.getHttpStatus(),
+                ex.getMessage()
         );
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(GitHubAccountNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleAccountNotFound(GitHubAccountNotFoundException ex, HttpServletRequest request) {
-        ErrorResponse error = new ErrorResponse(
-                HttpStatus.NOT_FOUND.value(),
-                "GitHub Account Not Found",
-                ex.getMessage(),
-                request.getRequestURI()
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorDetails> handleValidation(MethodArgumentNotValidException ex) {
+
+        FieldError error = ex.getBindingResult().getFieldError();
+
+        String message;
+        if (error != null) {
+            message = error.getField() + ": " + error.getDefaultMessage();
+        } else {
+            message = "Validation hatası";
+        }
+
+        log.warn("Validation hatası: {}", message);
+
+        return build(
+                HttpStatus.BAD_REQUEST,
+                message
         );
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(LanguageAndStatusNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleLanguageAndStatusNotFound(LanguageAndStatusNotFoundException ex, HttpServletRequest request) {
-        ErrorResponse error = new ErrorResponse(
-                HttpStatus.NOT_FOUND.value(),
-                "Language and Status fields are empty",
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+
+
+    private ResponseEntity<ErrorDetails> build(
+            HttpStatus status,
+            String message
+    ) {
+        ErrorDetails details = ErrorDetails.builder()
+                .status(status.value())
+                .message(message)
+                .build();
+
+        return ResponseEntity.status(status).body(details);
+    }
+
+    @Value
+    @Builder
+    public static class ErrorDetails {
+        int status;
+        String message;
     }
 }

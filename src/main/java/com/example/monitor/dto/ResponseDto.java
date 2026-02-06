@@ -34,4 +34,6 @@ public class ResponseDto {
     private LocalDateTime createdAt;
 
     private Status status;
+
+    private Integer trendingScore;
 }

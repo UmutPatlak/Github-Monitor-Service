@@ -1,12 +1,14 @@
 package com.example.monitor.exceptions;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(HttpStatus.NOT_FOUND)
-public class IdNotFoundException extends RuntimeException {
+public class IdNotFoundException extends BaseException {
+    public IdNotFoundException() {
+        super(
+                "GitHub Repository Bulunamadı", HttpStatus.NOT_FOUND
+        );
 
-    public IdNotFoundException(String message) {
-        super(message);
+
     }
+
 }

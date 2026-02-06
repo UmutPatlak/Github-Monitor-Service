@@ -1,49 +1,44 @@
 package com.example.monitor.client;
 
 import com.example.monitor.dto.GitHubResponseDto;
-import com.example.monitor.exceptions.GitHubAccountNotFoundException;
+import com.example.monitor.exceptions.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Recover;
-import org.springframework.retry.annotation.Retryable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
+
+import java.time.Duration;
 
 @Component
 @RequiredArgsConstructor
 public class GitHubClient {
-
     private final WebClient webClient;
 
-    @Retryable(
-            retryFor = RuntimeException.class,
-            maxAttempts = 3,
-            backoff = @Backoff(delay = 2000)
-    )
-    public Mono<GitHubResponseDto> getRepository(String owner, String repo) {
-        return webClient
-                .get()
+    public GitHubResponseDto fetchRepository(String owner, String repo, String etag) {
+        return webClient.get()
                 .uri("/repos/{owner}/{repo}", owner, repo)
-                .retrieve()
-                .onStatus(HttpStatusCode::is4xxClientError,
-                        response -> Mono.error(
-                                new GitHubAccountNotFoundException("GitHub client error")))
-                .onStatus(HttpStatusCode::is5xxServerError,
-                        response -> Mono.error(
-                                new RuntimeException("GitHub server error")))
-                .bodyToMono(GitHubResponseDto.class);
-    }
+                .headers(h -> {
+                    if (etag != null) h.setIfNoneMatch(etag);
+                })
+                .exchangeToMono(response -> {
+                    if (response.statusCode() == HttpStatus.NOT_MODIFIED) {
+                        return Mono.empty();
+                    }
 
-    @Recover
-    public Mono<GitHubResponseDto> recover(RuntimeException ex,
-                                           String owner,
-                                           String repo) {
-        return Mono.error(
-                new GitHubAccountNotFoundException(
-                        "GitHub API failed after retries: " + owner + "/" + repo
-                )
-        );
+                    if (response.statusCode() == HttpStatus.NOT_FOUND) {
+                        return Mono.error(new GitHubAccountNotFoundException());
+                    }
+
+                    return response.bodyToMono(GitHubResponseDto.class)
+                            .map(dto -> {
+                                String newEtag = response.headers().asHttpHeaders().getETag();
+                                dto.setEtag(newEtag);
+                                return dto;
+                            });
+                })
+                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2)))
+                .block(Duration.ofSeconds(10));
     }
 }

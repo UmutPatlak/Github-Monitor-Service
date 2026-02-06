@@ -10,9 +10,8 @@ import java.util.UUID;
 
 public interface GitHubMonitorService {
     ResponseDto addRepository(RequestDto request);
-    Page<ResponseDto> getAllRepositories(Pageable pageable);
-    void deleteRepository(UUID id);
+    Page<ResponseDto> getRepositories(String language, Status status, Pageable pageable);
     ResponseDto getOneRepository(UUID id);
-    ResponseDto updateRepository(UUID id, RequestDto request);
-    Page<ResponseDto> findByLanguageAndStatus(String language, Status status, Pageable pageable);
+    ResponseDto refreshRepository(UUID id);
+    void deleteRepository(UUID id);
 }

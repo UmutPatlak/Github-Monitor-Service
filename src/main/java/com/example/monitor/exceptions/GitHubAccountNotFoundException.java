@@ -1,12 +1,12 @@
 package com.example.monitor.exceptions;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(HttpStatus.NOT_FOUND)
-public class GitHubAccountNotFoundException extends RuntimeException {
+public class GitHubAccountNotFoundException extends BaseException {
 
-    public GitHubAccountNotFoundException(String message) {
-        super(message);
+    public GitHubAccountNotFoundException() {
+        super(
+                "GitHub Repository Bulunamadı",HttpStatus.NOT_FOUND
+        );
     }
 }

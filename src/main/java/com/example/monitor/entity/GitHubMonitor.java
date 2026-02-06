@@ -1,27 +1,30 @@
 package com.example.monitor.entity;
 
+import com.example.monitor.dto.GitHubResponseDto;
 import com.example.monitor.enums.Status;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import jakarta.persistence.Version;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
+@Table(
+        name = "github_monitors",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"owner", "repo_name"})
+        }
+)
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
-@Table(name = "repository_monitor", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"owner", "repo_name"})
-})
 public class GitHubMonitor {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
@@ -31,28 +34,60 @@ public class GitHubMonitor {
     @Column(name = "repo_name", nullable = false)
     private String repoName;
 
-    @Column(name = "stars", nullable = false)
+    @Column(name = "stars")
     private Integer stars;
 
-    @Column(name = "forks", nullable = false)
+    @Column(name = "forks")
     private Integer forks;
 
-    @Column(name = "open_issues", nullable = false)
+    @Column(name = "open_issues")
     private Integer openIssues;
 
-    @Column(name = "language", nullable = false)
+    @Column(name = "language")
     private String language;
 
-    @Column(name = "last_synced_at", nullable = false)
+    @Column(name = "last_synced_at")
     private LocalDateTime lastSyncedAt;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "status")
     private Status status;
 
+    @Column(name = "trending_score")
+    private Integer trendingScore;
+
+    @Column(name = "etag", length = 100)
+    private String etag;
+
     @Version
-    private Integer version;
+    @Column(name = "version")
+    private Long version;
+
+
+    public void updateStats(GitHubResponseDto data) {
+        int previousStars ;
+        if (this.stars != null) {
+            previousStars = this.stars;
+        } else {
+            previousStars = data.getStars();
+        }
+        this.stars = data.getStars();
+        this.forks = data.getForks();
+        this.openIssues = data.getOpenIssues();
+        this.language = data.getLanguage();
+        this.etag = data.getEtag();
+        this.status = Status.ACTIVE;
+        this.lastSyncedAt = LocalDateTime.now();
+
+        calculateTrendingScore(previousStars);
+    }
+
+    private void calculateTrendingScore(int previousStars) {
+        this.trendingScore = this.stars - previousStars;
+
+
+    }
 }
